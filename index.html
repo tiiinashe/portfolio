@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tinashe Shoniwa — Engineering Portfolio</title>
+<meta name="description" content="Portfolio of Tinashe Shoniwa, mechanical engineering student.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+
+<script data-goatcounter="https://tinashe.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<style>
+  :root {
+  --bg:        #fbfbfb;
+  --bg-elev:   #f0f4ff;
+  --ink:       #0F172A;
+  --ink-dim:   #475569;
+  --ink-faint: #94A3B8;
+  --accent:    #1E3A8A;
+  --accent-d:  #1E40AF;
+  --line:      rgba(15, 23, 42, 0.10);
+  --line-2:    rgba(15, 23, 42, 0.18);
+
+    --serif:    Georgia, serif;
+    --body:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     ui-monospace, 'SF Mono', Menlo, monospace;
+       
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(217, 119, 87, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* === LAYOUT === */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  nav .brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+  }
+  nav a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--ink); }
+  nav .status {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: var(--ink-dim);
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #6FCF97;
+    box-shadow: 0 0 8px #6FCF97;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* === SECTION HEADER === */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+  section { padding: 6rem 0; position: relative; }
+
+  /* === HERO === */
+  .hero { padding-top: 5rem; padding-bottom: 8rem; }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(3rem, 9vw, 7.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 1.5rem 0 2rem;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+  .hero .lede {
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+    color: var(--ink);
+    max-width: 38rem;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+  .hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3rem;
+    justify-content: center;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--serif);
+    font-size: 1rem;
+  }
+  .hero .meta div {
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .hero .meta .key {
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+  }
+  .hero .meta .val { color: var(--ink); }
+
+  /* === ABOUT === */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+  }
+  .about-grid h2 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 2.5rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .about-grid p {
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+    font-size: 1.1rem;
+    line-height: 1.65;
+  }
+  .about-grid p:last-child { margin-bottom: 0; }
+  .about-grid a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-d);
+    transition: opacity 0.2s;
+  }
+  .about-grid a:hover { opacity: 0.7; }
+
+  /* === PROJECTS === */
+  .project {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 2rem;
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+  }
+  .project:first-of-type { border-top: 1px solid var(--line); }
+  .project:hover {
+    padding-left: 1rem;
+    background: linear-gradient(90deg, rgba(217,119,87,0.06), transparent 60%);
+  }
+  .project .num {
+    font-family: var(--mono);
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  .project h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.75rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+  }
+  .project:hover h3 { color: var(--accent); }
+  .project p {
+    color: var(--ink-dim);
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 42rem;
+    margin-bottom: 0.75rem;
+  }
+  .project .tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .project .tags span::after { content: ' ·'; margin-left: 0.5rem; }
+  .project .tags span:last-child::after { content: ''; }
+  .project .year {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    align-self: start;
+  }
+  .project .arrow {
+    grid-column: 3;
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    transition: transform 0.3s, color 0.3s;
+  }
+  .project:hover .arrow { transform: translateX(6px); color: var(--accent); }
+
+  /* === EXPERIENCE === */
+  .timeline { position: relative; }
+  .entry {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 3rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry .when {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    padding-top: 0.35rem;
+  }
+  .entry h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.4rem;
+    margin-bottom: 0.25rem;
+  }
+  .entry .where {
+    color: var(--accent);
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    font-style: italic;
+  }
+  .entry p {
+    color: var(--ink-dim);
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  /* === SKILLS === */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+  }
+  .skill-group h3 {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .skill-group ul { list-style: none; }
+  .skill-group li {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    padding: 0.5rem 0;
+    color: var(--ink);
+    transition: color 0.2s, padding-left 0.2s;
+    cursor: default;
+  }
+  .skill-group li:hover {
+    color: var(--accent);
+    padding-left: 0.5rem;
+  }
+
+  /* === CONTACT === */
+  .contact-block {
+    text-align: center;
+    padding: 4rem 0 2rem;
+  }
+  .contact-block h2 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 2rem;
+  }
+  .contact-block .email {
+    display: inline-block;
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-d);
+    padding-bottom: 0.2rem;
+    transition: all 0.3s;
+  }
+  .contact-block .email:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .socials {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .socials a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .socials a:hover { color: var(--accent); }
+
+  /* === FOOTER === */
+  footer {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* === ENTRANCE ANIMATIONS === */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: reveal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .d1 { animation-delay: 0.1s; }
+  .d2 { animation-delay: 0.25s; }
+  .d3 { animation-delay: 0.4s; }
+  .d4 { animation-delay: 0.55s; }
+  .d5 { animation-delay: 0.7s; }
+
+  /* Scroll-reveal */
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .scroll-reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* === MOBILE === */
+  @media (max-width: 800px) {
+    body { font-size: 16px; }
+    .container { padding: 0 1.25rem; }
+    nav ul { display: none; }
+    section { padding: 4rem 0; }
+    .about-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .skills-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .project { grid-template-columns: 50px 1fr; gap: 1rem; }
+    .project .year { grid-column: 2; }
+    .project .arrow { display: none; }
+    .entry { grid-template-columns: 1fr; gap: 0.5rem; }
+    .hero .meta { gap: 1.5rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== NAV ============== -->
+  <nav class="reveal">
+    <div class="brand">Tinashe Shoniwa</div>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#work">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+
+  </nav>
+
+  <!-- ============== HERO ============== -->
+  <section class="hero">
+    
+    <h1 class="reveal d2">
+      Mechanical<br>
+      engineering<br>
+      <em>student & maker.</em>
+    </h1>
+    <p class="lede reveal d3">
+      Final-year undergraduate at the Hochschule Rhein Waal,
+      combining hands-on machining and assembly experience with strong CAD and simulation skills. 
+      Currently seeking an internship, ideally with a focus on hardware development and prototyping.
+    </p>
+    <div class="meta reveal d4">
+      <div>
+        <span class="key">Location</span>
+        <span class="val">Kleve, DE</span>
+      </div>
+      <div>
+        <span class="key">Focus Field</span>
+        <span class="val">Design · Simulation</span>
+      </div>
+      <div>
+        <span class="key">Year</span>
+        <span class="val">B.Sc. — 2026</span>
+      </div>
+      <div>
+        <span class="key">Status</span>
+        <span class="val">Seeking Internship</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== ABOUT ============== -->
+  <section id="about" class="scroll-reveal">
+    <div class="section-label">About</div>
+    <div class="about-grid">
+      <h2>Understanding and building things.</h2>
+      <div>
+        <p>
+          I'm Tinashe, a mechanical engineering student who genuinely
+          enjoys the messy middle of building things: the CAD that has error messages and
+          doesn't print, the prototype that almost works, the simulation
+          that doesn't match the bench test.
+        </p>
+        <p>
+          My work sits at the intersection of mechanics, electronics,
+          and a bit of code. I've spent time trying to understand where the problem lies and how to fix it,
+          and I'm happiest when there's a deadline and a soldering iron
+          nearby.
+        </p>
+        <p>
+          Outside, I go hiking, fix faulty home appliances, and read books. Currenly reading "The Odyssey" by Homer (in translation). I also have a soft spot for cooking shows and documentaries about engineering feats.
+      
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PROJECTS ============== -->
+  <section id="work" class="scroll-reveal">
+    <div class="section-label">Projects</div>
+
+      <a href="scissor_lift.html" class="project">
+      <span class="num">01 ⟶</span>
+      <div>
+        <h3>Scissor-Lift Table — Statics & Stress Analysis </h3>
+        <p>
+          Conducted a comprehensive structural analysis to calculate forces and stresses within a structural steel scissor lift table operating under a 5 kN applied force.
+          The goal was to validate the design's integrity across its full range of motion, ensuring safe operation for heavy-duty lifting.
+        </p>
+        <div class="tags">
+          <span>Static Analysis</span><span>Solidworks</span><span>Stress Analysis</span><span>Force Calculations</span><span>FEM Validation</span>
+        </div>
+      </div>
+      <span class="year">2024</span>
+      <span class="arrow">→</span>
+    </a>
+
+<a href="bevel gear.html" class="project">
+      <span class="num">02 ⟶</span>
+      <div>
+        <h3>Design and Analysis of a Bevel Gearbox</h3>
+        <p>
+          This project involved the full mechanical design and validation of a bevel gearbox, including torque transmission, shaft sizing, bearing life calculations, housing design, and interference checks.
+        Using engineering standards and real component specifications, the gearbox was developed to balance reliability, manufacturability, and performance. 
+
+
+        </p>
+        <div class="tags">
+          <span>Machine Design</span><span>SolidWorks</span><span>Bearing Analysis</span><span>Technical Drawings</span><span>Drive Systems</span>
+        </div>
+      </div>
+      <span class="year">2025</span>
+      <span class="arrow">→</span>
+    </a>
+    
+    <a href="gutterbot.html" class="project">
+      <span class="num">03 ⟶</span>
+      <div>
+        <h3>Autonomous Gutter Cleaner - "GutterBot*"</h3>
+        <p> 
+        A complete product development project focused on designing a semi-autonomous gutter cleaning robot for residential applications. 
+        The project combined mechanical design, drive system calculations, DFMEA risk analysis, battery and motor selection, CAD development, and human-machine interface integration into a compact, waterproof robotic system.
+        </p>
+        <div class="tags">
+          <span>SolidWorks</span><span>Product Development</span><span>Arduino</span><span>Design for Manufacturing (DFM)</span><span>DFMEA</span><span>Load Calculations</span><span>Risk Analysis</span>
+        </div>
+      </div>
+      <span class="year">2025</span>
+      <span class="arrow">→</span>
+    </a>
+
+
+     <a href="reverse_engineering.html" class="project">
+      <span class="num">04 ⟶</span>
+      <div>
+        <h3>Reverse Engineering of a Heat-Pump Tumble-Dryer Fascia</h3>
+        <p> 
+          Reverse engineered the fascia of a heat-pump tumble dryer, creating a detailed CAD model based on physical measurements and visual inspection. 
+          The project involved capturing complex geometries, mounting features, and interface points to produce an accurate digital representation suitable for manufacturing or modification.
+        </p>
+        <div class="tags">
+          <span>SolidWorks</span><span>Mould Design</span><span>Cavity Design</span><span>Design for Manufacturing (DFM)</span><span>3D Scanning</span><span>Reverse Engineering</span>
+      </div>
+      </div>
+      <span class="year">2025</span>
+      <span class="arrow">→</span>
+    </a>
+  
+    <a href="racing_seat.html" class="project">
+      <span class="num">05 ⟶</span>
+      <div>
+        <h3>FEM & FKM Strength Assessment of a Racing-Car Seat Shell </h3>
+        <p>
+          This project involved the simulation and verification of a racing seat shell using finite element analysis and FKM standards.
+          The work included load calculations, mesh optimization, fatigue assessment, and elastic-plastic simulations for crash and endurance scenarios
+        </p>
+        <div class="tags">
+          <span>Finite Element Analysis (FEA)</span><span>ANSYS</span><span>Fatigue Analysis</span><span>Failure Analysis</span><span>Mesh Optimization</span><span>Stress Analysis</span> <span>ANSYS Mechanical</span>
+        </div>
+      </div>
+      <span class="year">2026</span>
+      <span class="arrow">→</span>
+    </a>
+
+  </section>
+  
+
+  <!-- ============== EXPERIENCE ============== -->
+  <section id="experience" class="scroll-reveal">
+    <div class="section-label">Experience & Education</div>
+    <div class="timeline">
+
+     
+
+      <div class="entry">
+        <div class="when">Aug - Sep 2023</div>
+        <div>
+          <h3>Mechanical Engineering Intern</h3>
+          <div class="where">Roterberg Maschinenbau GmbH, Kleve</div>
+          <p>
+            •	Machined precision shafts to tight tolerances from customer Prüfpläne (lathe turning, drilling counterbore holes, sawing) in a series-production environment.
+ 
+          </p>
+          <p>
+            •	Performed dimensional inspection of every batch with vernier callipers; identified a blunted saw blade and escalated to the supervisor, restoring throughput without scrap.
+            
+          </p>
+          <p>
+            •	Installed bearings into a batch of 35 assembled rods with retention bands and finished surfaces to customer roughness specifications; passed 100% of inspections on first review.
+
+          </p>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="when">Jul - Aug 2023</div>
+        <div>
+          <h3>Mechanical Engineering Intern</h3>
+          <div class="where">Bulawayo City Council, Bulawayo</div>
+          <p>
+            •	Technical procurement: ran the supplier RFQ cycle for engineering materials (drafting enquiry emails, comparing quotations, raising orders, supervising delivery and barcode-tracked stock intake) and managed defect returns with reimbursement.
+          </p>
+          <p>•	Technical procurement: ran the supplier RFQ cycle for engineering materials (drafting enquiry emails, comparing quotations, raising orders, supervising delivery and barcode-tracked stock intake) and managed defect returns with reimbursement.
+
+          </p>
+          <p>
+            •	Machining: threaded DN 900 gate-valve shafts on a manual lathe (with inch-to-mm conversion) and drilled metal plates under PPE protocols.
+          </p>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="when">2016 — 2020</div>
+        <div>
+          <h3>Highschool</h3>
+          <div class="where">Global English School</div>
+          <p>
+            Specialization: Sciences.
+            Coursework included Chemistry, Math, Physics, English and Biology. Graduated with A-levels in Physics, Math, and Chemistry.
+            Extracurriculars included the Chess Club.
+          </p>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="when">2022 — Now</div>
+        <div>
+          <h3>B.Sc. Mechanical Engineering</h3>
+          <div class="where">Hochschule Rhein Waal</div>
+          <p>
+            Specialization: Design & Simulation.
+            Coursework includes Controls, FEM,
+            Drive Systems, Dynamics, Simulation,
+            Machine Design, and Numerical Methods.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============== SKILLS ============== -->
+  <section id="skills" class="scroll-reveal">
+    <div class="section-label">Toolkit</div>
+    <div class="skills-grid">
+
+      <div class="skill-group">
+        <h3>Design & Simulation</h3>
+        <ul>
+          <li>SolidWorks</li>
+          <li>Fusion 360</li>
+          <li>ANSYS Mechanical</li>
+          <li>MATLAB / Simulink</li>
+          <li>Technical Drawings</li>
+          <li>Design for Manufacturing (DFM)</li>
+          <li>Design Failure Mode and Effects Analysis (DFMEA)</li>
+          <li>Microsoft Office (Word, Excel, PowerPoint)</li>
+          <li>Adobe Photoshop</li>
+          <li>Python</li>
+
+        
+        </ul>
+      </div>
+
+      <div class="skill-group">
+        <h3>Languages</h3>
+        <ul>
+          <li>English (Fluent)</li>
+          <li>Ndebele (Fluent)</li>
+          <li>Shona (Native)</li>
+          <li>Zulu (Fluent)</li>
+          <li>German (B1)</li>
+        </ul>
+      </div>
+
+
+      <div class="skill-group">
+        <h3>Certifications</h3>
+        <ul>
+          <li>MATLAB Onramp</li>
+          <li>MATLAB Simulink</li>
+          <li>SolidWorks CSWA</li>
+          <li>IELTS (7.5)</li>
+          <li>Python (In Process)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============== CONTACT ============== -->
+  <section id="contact" class="scroll-reveal">
+    <div class="section-label">Get in touch</div>
+    <div class="contact-block">
+      <h2>Let's work<br> on something together.</h2>
+      <a class="email" href="mailto:shoniwatinashe7@gmail.com">shoniwatinashe7@gmail.com</a>
+      <div class="socials">
+        <a href="https://github.com/tiiinashe" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://linkedin.com/in/tinashe-shoniwa" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="cv.pdf" target="_blank" rel="noopener">CV (PDF) ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>© 2026 Tinashe Shoniwa · Built by hand</div>
+    <div>v1.0 · Last updated May 2026</div>
+  </footer>
+
+</div>
+
+<script>
+  // Scroll-reveal observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverse Engineering — Heat Pump Dryer Fascia Panel — Tinashe Shoniwa</title>
+<meta name="description" content="3D scanning and reverse engineering of a heat pump tumble dryer control panel fascia using CAD reconstruction and mold design.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:        #fbfbfb;
+    --bg-elev:   #f0f4ff;
+    --ink:       #0F172A;
+    --ink-dim:   #475569;
+    --ink-faint: #94A3B8;
+    --accent:    #1E3A8A;
+    --accent-d:  #1E40AF;
+    --line:      rgba(15, 23, 42, 0.10);
+    --line-2:    rgba(15, 23, 42, 0.18);
+    --serif:    Georgia, serif;
+    --body:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(217, 119, 87, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  nav .brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  nav .back {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav .back:hover { color: var(--accent); }
+
+  /* === PROJECT HEADER === */
+  .project-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3rem;
+  }
+  .project-header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .project-meta span::after { content: ' ·'; margin-left: 1.5rem; }
+  .project-meta span:last-child::after { content: ''; }
+
+  /* === SECTION LABEL === */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 4rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* === CONTENT === */
+  .content {
+    max-width: 800px;
+  }
+  .content h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1rem;
+    letter-spacing: -0.02em;
+  }
+  .content h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin: 1.8rem 0 0.75rem;
+    letter-spacing: -0.01em;
+  }
+  .content p {
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content ul, .content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* === TAGS === */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border-radius: 4px;
+  }
+    .image-container {
+    margin: 2rem 0;
+    background: var(--bg-elev);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  .image-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-dim);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* === TABLE === */
+  .content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  .content th {
+    background: var(--bg-elev);
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 2px solid var(--line);
+  }
+  .content td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* === DOCUMENT LINKS === */
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    margin: 0.5rem 0;
+  }
+  .doc-link:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 6rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 800px) {
+    body { font-size: 16px; }
+    .container { padding: 0 1.25rem; }
+    .project-header { padding: 2rem 0 1.5rem; }
+    .project-header h1 { font-size: 2rem; }
+    .project-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .project-meta span::after { content: ''; margin: 0; }
+    .content h2 { font-size: 1.5rem; }
+    .content table { font-size: 0.85rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== NAV ============== -->
+  <nav>
+    <div class="brand">Tinashe's Portfolio</div>
+    <a href="index.html" class="back">← Back to portfolio</a>
+  </nav>
+
+  <!-- ============== PROJECT HEADER ============== -->
+  <div class="project-header">
+    <h1>Reverse Engineering — Heat Pump Dryer Fascia</h1>
+    <div class="project-meta">
+      <span>2025</span>
+      <span>3D Scanning & CAD</span>
+      <span>Virtual Product Design</span>
+    </div>
+  </div>
+
+  <!-- ============== TAGS ============== -->
+  <div class="tags">
+    <span class="tag">3D Scanning</span>
+    <span class="tag">Reverse Engineering</span>
+    <span class="tag">SolidWorks CAD</span>
+    <span class="tag">Mold Design</span>
+    <span class="tag">Mesh Processing</span>
+    <span class="tag">ScanTo3D</span>
+    <span class="tag">Digital Reconstruction</span>
+  </div>
+
+  <!-- ============== CONTENT ============== -->
+  <div class="content">
+
+    <h2>Overview</h2>
+    <p>
+      Reverse engineering of a heat pump tumble dryer control panel (0107 fascia) through 3D scanning and digital reconstruction. The project demonstrates the complete workflow of capturing physical geometry, processing point cloud data, and recreating functional CAD models suitable for mold design and reproduction.
+    </p>
+
+    <h2>Project Objectives</h2>
+    <ul>
+      <li>Capture detailed geometric data of injection-molded component using 3D laser scanner</li>
+      <li>Process point cloud mesh and reconstruct surface geometry in CAD</li>
+      <li>Create simplified but representative digital model for manufacturing</li>
+      <li>Design mold cavity and core for component reproduction</li>
+      <li>Document limitations and learnings in 3D scanning technology</li>
+    </ul>
+ <div class="image-container">
+      <img src="../portfolio/pictures/pump1.png " alt="SolidWorks model" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-cad.jpg</div>'">
+      <div class="image-caption">SolidWorks model of the heat pump dryer fascia</div>
+ </div>
+    <h2>Equipment & Software</h2>
+    <table>
+      <tr>
+        <th>Tool</th>
+        <th>Specifications</th>
+      </tr>
+      <tr>
+        <td>3D Scanner</td>
+        <td>HandySCAN 300 by CREAFORM — 0.1 mm resolution, 0.04 mm accuracy</td>
+      </tr>
+      <tr>
+        <td>Scan Capabilities</td>
+        <td>205,000 measurements/s, 225 × 250 mm scanning area, 3 red laser crosses</td>
+      </tr>
+      <tr>
+        <td>Mesh Software</td>
+        <td>VXelements (CREAFORM) — point cloud generation and STL export</td>
+      </tr>
+      <tr>
+        <td>CAD Software</td>
+        <td>SolidWorks 2024 with ScanTo3D addon for mesh preparation and surface reconstruction</td>
+      </tr>
+      <tr>
+        <td>Output Format</td>
+        <td>STL mesh file imported as Graphics Body for CAD modeling</td>
+      </tr>
+    </table>
+
+    <h2>Methodology</h2>
+    <p>
+      <strong>Scanning Phase:</strong> HandySCAN 300 captured detailed geometric data from all angles of the control panel. Three red laser crosses enabled self-positioning without fixed reference markers. Scan data converted to mesh format and exported as STL file with point cloud resolution optimized for component size.
+    </p>
+    <p>
+      <strong>Mesh Processing:</strong> STL file imported into SolidWorks as Graphics Body. ScanTo3D addon used for mesh preparation, noise reduction, and face reduction to optimize file size. Process highlighted challenge of maintaining resolution while managing file complexity—software stability required saving after each modification.
+    </p>
+    <p>
+      <strong>Surface Reconstruction:</strong> Identified reference surfaces and established coordinate origin from mesh geometry. Surface Wizard attempted automatic feature extraction, but manual reconstruction proved necessary due to curved surfaces and lost detail in complex features. Simplified geometry approach used to create manufacturable representation while preserving functional surface topology.
+    </p>
+    <p>
+      <strong>Mold Design:</strong> SolidWorks Cavity Tool used to generate mold halves from completed CAD model. Created core and cavity components with proper parting planes and draft angles suitable for injection molding production.
+    </p>
+
+    <h2>Key Challenges & Learnings</h2>
+    <ul>
+      <li><strong>Resolution Loss:</strong> Each mesh processing step degraded point cloud detail, requiring careful optimization between file size and accuracy</li>
+      <li><strong>Software Stability:</strong> Mesh complexity caused SolidWorks crashes; required iterative face reduction and frequent save operations</li>
+      <li><strong>Curved Surface Reconstruction:</strong> Automated surface extraction failed on complex geometry; manual surface creation necessary to achieve acceptable results</li>
+      <li><strong>Scan Quality Dependency:</strong> Demonstrated that 3D scanning output quality directly impacts reverse engineering feasibility—detailed scans with sufficient resolution critical for fine features</li>
+      <li><strong>Simplified Modeling:</strong> Final CAD represents functional geometry but simplified complexity; demonstrates practical trade-off between scan accuracy and CAD usability</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>
+      Successfully reconstructed functional CAD model of heat pump dryer control panel from 3D scan data. Project demonstrated viability of scan-to-CAD workflow for component reproduction without original physical object, while highlighting critical importance of scan resolution and quality. Simplified geometric approach proved practical for injection mold design despite some loss of fine details. Process shows 3D scanning valuable for rapid reverse engineering when scan parameters optimized appropriately.
+    </p>
+
+    <div class="section-label">Documentation</div>
+    <p>
+      <a href="Reverse Engineering Report.pdf" class="doc-link" target="_blank">
+        📄 Complete Reverse Engineering Report (PDF)
+      </a>
+    </p>
+
+  </div>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>© 2026 Tinashe Shoniwa</div>
+  </footer>
+
+</div>
+
+</body>
+</html>

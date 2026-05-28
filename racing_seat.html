@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Racing Seat FEM Analysis — Tinashe Shoniwa</title>
+<meta name="description" content="FEM & FKM strength assessment of a racing-car seat shell.">
+
+<style>
+  :root {
+    --bg:        #fbfbfb;
+    --bg-elev:   #f0f4ff;
+    --ink:       #0F172A;
+    --ink-dim:   #475569;
+    --ink-faint: #94A3B8;
+    --accent:    #1E3A8A;
+    --accent-d:  #1E40AF;
+    --line:      rgba(15, 23, 42, 0.10);
+    --line-2:    rgba(15, 23, 42, 0.18);
+
+    --serif:    Georgia, serif;
+    --body:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(217, 119, 87, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+ 
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 2px;
+      border: 2px solid #32ff7e;
+      border-radius: 8px;
+      color: #32ff7e;
+      background: rgba(50, 255, 126, 0.05);
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+ 
+
+
+  /* === NAV === */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  nav .brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  nav .back {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav .back:hover { color: var(--accent); }
+
+  /* === PROJECT HEADER === */
+  .project-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3rem;
+  }
+  .project-header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .project-meta span::after { content: ' ·'; margin-left: 1.5rem; }
+  .project-meta span:last-child::after { content: ''; }
+
+  /* === SECTION LABEL === */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 4rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* === CONTENT === */
+  .content {
+    max-width: 800px;
+  }
+  .content h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1rem;
+    letter-spacing: -0.02em;
+  }
+  .content p {
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content ul, .content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* === TAGS === */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border-radius: 4px;
+  }
+
+  /* === IMAGES === */
+  .image-container {
+    margin: 2rem 0;
+    background: var(--bg-elev);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  .image-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-dim);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* === DOCUMENT LINKS === */
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    margin: 0.5rem 0;
+  }
+  .doc-link:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 6rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 800px) {
+    body { font-size: 16px; }
+    .container { padding: 0 1.25rem; }
+    .project-header { padding: 2rem 0 1.5rem; }
+    .project-header h1 { font-size: 2rem; }
+    .project-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .project-meta span::after { content: ''; margin: 0; }
+    .content h2 { font-size: 1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== NAV ============== -->
+  <nav>
+    <div class="brand">Tinashe's Portfolio</div>
+    <a href="index.html" class="back">← Back to portfolio</a>
+  </nav>
+
+  <!-- ============== PROJECT HEADER ============== -->
+  <div class="project-header">
+    <h1>FEM & FKM Strength Assessment of a Racing-Car Seat Shell</h1>
+    <div class="project-meta">
+      <span>2026</span>
+      <span>ANSYS Mechanical</span>
+      <span>Finite Element Analysis</span>
+    </div>
+  </div>
+
+  <!-- ============== TAGS ============== -->
+  <div class="tags">
+    <span class="tag">Finite Element Analysis (FEA)</span>
+    <span class="tag">ANSYS</span>
+    <span class="tag">Fatigue Analysis</span>
+    <span class="tag">Failure Analysis</span>
+    <span class="tag">Mesh Optimization</span>
+    <span class="tag">Stress Analysis</span>
+    <span class="tag">ANSYS Mechanical</span>
+  </div>
+
+  <!-- ============== CONTENT ============== -->
+  <div class="content">
+
+    <div><h2><u>Overview</u></h2></div>
+    <p>
+      This project evaluates the structural integrity of a racing car seat shell designed to protect the driver under extreme loading conditions. The seat must balance lightweighting for vehicle performance with structural rigidity to protect the driver's spine and pelvis during high-performance driving and crash scenarios.
+
+The analysis follows the FKM guideline for local stress assessment, combining finite element simulation with standardized strength verification procedures used in German automotive and aerospace engineering.
+    </p>
+  <h2><u>Objectives</u></h2>
+  <p>The primary objectives of this project were to:</p>
+    <ul>
+      <li>Verify structural adequacy under 9g vertical acceleration (circuit driving)</li>
+      <li>Assess crashworthiness under 20g rear impact with 120kg driver mass</li>
+      <li>Apply FKM guideline for static and fatigue strength assessment</li>
+      <li>Determine degree of utilization and identify failure modes</li>
+      <li>Provide concrete design recommendations for structural improvement</li>
+    </ul>
+
+    <!-- REPLACE THIS PLACEHOLDER WITH YOUR ACTUAL IMAGE -->
+
+ <div class="image-container">
+  <img src="../portfolio/pictures/seaat.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Seat Shell Geometry</div>
+</div> 
+
+    <h2><u>Load Case Definitions</u></h2>
+    <p>
+      The seat was analyzed under 2 different load scenarios:
+    </p>
+    <ul>
+      <li><strong>Load Case 1:</strong> 9g vertical acceleration</li>
+      <li><strong>Load Case 2:</strong> 20g rear impact with 120kg driver mass</li>
+      <li><strong>Fatigue Loads:</strong> Cyclic loading representing 10,000 hours of race use</li>
+    </ul>
+
+ <h2><u>Geometry Simplification</u></h2>
+    <p>
+      First, the original CAD model of the seat shell was simplified to remove non-structural features (e.g. supports, headrest) while preserving critical load paths and stress concentration areas. The final geometry consisted of a single shell body with uniform thickness, representing the main load-bearing structure of the seat.
+    </p>
+ <div class="image-container">
+  <img src="../portfolio/pictures/seat3.PNG" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Seat Shell Geometry</div>
+</div>  
+    <h2><u>Material Properties & Meshing</u></h2>
+    <p>
+      The seat shell was modeled using carbon fiber reinforced polymer (CFRP) with orthotropic 
+      material properties validated through experimental testing. A structured mesh convergence 
+      study was performed to ensure solution accuracy (>70% element quality) while maintaining computational efficiency.
+    </p>
+
+ <div class="image-container">
+  <img src="../portfolio/pictures/seat4.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Course Mesh of the seat</div>
+</div> 
+
+    <h2><u>FKM Strength Assessment</u></h2>
+    <p>
+      Following FKM guidelines, safety factors were calculated for static and fatigue loading. 
+      The analysis considered:
+    </p>
+    <ul>
+      <li>Material strength reduction factors for CFRP layup quality</li>
+      <li>Surface finish and stress concentration factors</li>
+      <li>Load spectrum and mean stress effects for fatigue</li>
+      <li>Safety factors appropriate for racing applications</li>
+    </ul>
+
+    <h2><u>Analysis Workflow</u></h2>
+    <p>
+      The analysis workflow consisted of:
+    <ul>
+      <li><strong>Phase 1: Linear Elastic - </strong>  Baseline stress distribution, identify hotspots, verify load paths
+</li>
+      <li><strong>Phase 2: Elastic-Ideally Plastic - </strong> Capture yielding behavior, determine plastic collapse load</li>
+      <li><strong>Phase 3: FKM Assessment - </strong> Calculate degree of utilization per guideline</li>
+     
+    </ul>
+
+    <div ><h2><u>Results and Analysis</u></h2></div>
+    <h3><u>Load Case 1:</u> 9g Vertical Acceleration</h3>
+  
+    <p>
+      Circuit driving scenario with vertical acceleration equivalent to 9g acting on the driver mass (120 kg) through the seat contact patch.
+    </p>
+
+    <div class="image-container">
+  <img src="../portfolio/pictures/seat5.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Boundary Conditions</div>
+</div> 
+
+      <strong>Static Analysis:</strong>
+      <p>Applied the FKM guideline (Chapters 3–4) for static strength verification using local stresses extracted from the linear-elastic model. The calculated degree of utilization of 0.71 indicates the component operates within allowable limits under this load case, with approximately 29% safety margin before reaching the design limit.</p>
+<div class="image-container">
+  <img src="../portfolio/pictures/c1.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Load Case 1: 9g Vertical Acceleration</div>
+</div> 
+
+      <strong>Fatigue Analysis:</strong>
+      <p>The fatigue assessment for 10⁸ load cycles did not meet the required endurance level. While the seat shell satisfies static strength requirements, repeated loading at 9g vertical acceleration would lead to fatigue failure before reaching the target service life.
+    
+      </p>
+    <u>Design Recommendations</u>
+    <p>
+      Increase thickness in high-stress regions or introduce local reinforcements (ribs, doublers) to reduce stress concentration and improve fatigue life
+    </p>
+
+   <div class="image-container">
+  <img src="../portfolio/pictures/max pr stress.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Maximum Principal Stress Distribution</div>
+</div> 
+    
+    <h3><u>Load Case 2:</u> 20g Rear Crash</h3>
+  
+
+    <p>
+      Rear impact scenario with 20g deceleration acting through the driver's back and head contact areas.
+    </p>
+
+    <div class="image-container">
+  <img src="../portfolio/pictures/back1.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Equivalent Stress Distribution</div>
+</div> 
+
+      <strong>Analysis Findings:</strong>
+      <p>The linear-elastic simulation produced unrealistically high local stresses, indicating the structure was driven far beyond the elastic range. The elastic-ideally-plastic model confirmed early structural failure — the critical plastic strain criterion was reached at only a small fraction of the full 20g load.
+        The seat shell does not satisfy the static strength requirement for the 20g rear crash case. Plastic collapse occurs well before reaching the design load, indicating a fundamental structural inadequacy.
+      </p>
+    <u>Design Recommendations</u>
+    <p>Major redesign required. Consider:
+      <ul>
+        <li>(1) increased shell thickness in back support region</li>
+        <li>(2) structural ribs or stiffeners along load path</li>
+        <li>(3) integration of energy-absorbing elements</li>
+        <li>(4) material upgrade to higher-strength alloy (e.g., Al7075-T651 with improved damage tolerance)</li>
+      </ul>
+    </p>
+<div class="image-container">
+  <img src="../portfolio/pictures/back2.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Stress Hotspot</div>
+</div> 
+
+   <div class="image-container">
+  <img src="../portfolio/pictures/back3.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Equivalent Von Mises Stress</div>
+</div> 
+
+<h2><u>Conclusions</u></h2>
+    <p>
+      <ul>
+      <li><u>Load Case 1 (9g vertical):</u> Passes static strength check with 29% safety margin (degree of utilization = 0.71), but fails the 10⁸-cycle fatigue requirement.</li>
+      <li><u>Load Case 2 (20g rear crash):</u> Fails static strength check due to plastic collapse at loads significantly below the design requirement.</li>
+      </ul>
+    The analysis confirms that the seat shell requires structural redesign before it can be considered acceptable for the specified service conditions. Priority should be given to addressing the 20g crash case failure through thickness increases, reinforcement, or material upgrade, followed by fatigue optimization for the 9g circuit-driving scenario.
+    </p>
+
+<div ><h2>Documentation</h2></div>
+    <p>
+      <a href="FEM of a racing chair.pdf" class="doc-link" target="_blank">
+        📄 Full Technical Report (PDF)
+      </a>
+    </p>
+
+  </div>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>© 2026 Tinashe Shoniwa</div>
+  </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bevel Gearbox Design & Analysis — Tinashe Shoniwa</title>
+<meta name="description" content="Mechanical design and calculations for a bevel gearbox with 1.5:1 transmission ratio.">
+ 
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+ 
+<style>
+  :root {
+    --bg:        #fbfbfb;
+    --bg-elev:   #f0f4ff;
+    --ink:       #0F172A;
+    --ink-dim:   #475569;
+    --ink-faint: #94A3B8;
+    --accent:    #1E3A8A;
+    --accent-d:  #1E40AF;
+    --line:      rgba(15, 23, 42, 0.10);
+    --line-2:    rgba(15, 23, 42, 0.18);
+    --serif:    Georgia, serif;
+    --body:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+ 
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+ 
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(217, 119, 87, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+ 
+  ::selection { background: var(--accent); color: var(--bg); }
+ 
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+ 
+  /* === NAV === */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  nav .brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  nav .back {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav .back:hover { color: var(--accent); }
+ 
+  /* === PROJECT HEADER === */
+  .project-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3rem;
+  }
+  .project-header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .project-meta span::after { content: ' ·'; margin-left: 1.5rem; }
+  .project-meta span:last-child::after { content: ''; }
+ 
+  /* === SECTION LABEL === */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 4rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+ 
+  /* === CONTENT === */
+  .content {
+    max-width: 800px;
+  }
+  .content h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1rem;
+    letter-spacing: -0.02em;
+  }
+  .content h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin: 1.8rem 0 0.75rem;
+    letter-spacing: -0.01em;
+  }
+  .content p {
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content ul, .content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content li {
+    margin-bottom: 0.5rem;
+  }
+ 
+  /* === TAGS === */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border-radius: 4px;
+  }
+ 
+  /* === IMAGES === */
+  .image-container {
+    margin: 2rem 0;
+    background: var(--bg-elev);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  .image-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-dim);
+    text-align: center;
+    font-style: italic;
+  }
+ 
+  /* === DOCUMENT LINKS === */
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    margin: 0.5rem 0;
+  }
+  .doc-link:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+ 
+  /* === TABLE === */
+  .content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  .content th {
+    background: var(--bg-elev);
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 2px solid var(--line);
+  }
+  .content td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+ 
+  /* === FOOTER === */
+  footer {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 6rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+ 
+  /* === MOBILE === */
+  @media (max-width: 800px) {
+    body { font-size: 16px; }
+    .container { padding: 0 1.25rem; }
+    .project-header { padding: 2rem 0 1.5rem; }
+    .project-header h1 { font-size: 2rem; }
+    .project-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .project-meta span::after { content: ''; margin: 0; }
+    .content h2 { font-size: 1.5rem; }
+    .content table { font-size: 0.85rem; }
+  }
+ 
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="container">
+ 
+  <!-- ============== NAV ============== -->
+  <nav>
+    <div class="brand">Tinashe's Portfolio</div>
+    <a href="index.html" class="back">← Back to portfolio</a>
+  </nav>
+ 
+  <!-- ============== PROJECT HEADER ============== -->
+  <div class="project-header">
+    <h1>Bevel Gearbox Design and Analysis</h1>
+    <div class="project-meta">
+      <span>2025</span>
+      <span>SolidWorks</span>
+      <span>Mechanical Design & Engineering</span>
+    </div>
+  </div>
+ 
+  <!-- ============== TAGS ============== -->
+  <div class="tags">
+    <span class="tag">Bevel Gearbox Design</span>
+    <span class="tag">SolidWorks CAD</span>
+    <span class="tag">Mechanical Analysis</span>
+    <span class="tag">Bearing Calculations</span>
+    <span class="tag">Shaft Design</span>
+    <span class="tag">Force Calculations</span>
+    <span class="tag">Technical Drawings</span>
+    <span class="tag">Machine Design</span>
+  </div>
+ 
+  <!-- ============== CONTENT ============== -->
+  <div class="content">
+ 
+    <h2>Overview</h2>
+    <p>
+      This project involved the complete mechanical design, analysis, and documentation of a bevel gearbox system. Developed in collaboration with Gift Chidewu, this gearbox is designed to transmit rotational motion between perpendicular shafts with a 1.5:1 transmission ratio (16:24 teeth). The project combined comprehensive force calculations, shaft and bearing design, stress analysis, and practical manufacturing considerations to create a functional, cost-effective power transmission system.
+    </p>
+ 
+    <h2>Project Objectives</h2>
+    <p>The primary objectives were to:</p>
+    <ul>
+      <li>Design a complete bevel gearbox system meeting the specified 1.5:1 transmission ratio</li>
+      <li>Calculate contact forces between meshing gears and distribute loads to shafts and bearings</li>
+      <li>Perform detailed stress analysis on both driving and driven shafts</li>
+      <li>Select and verify appropriate bearings for radial and axial loading conditions</li>
+      <li>Design parallel key connections for torque transmission</li>
+      <li>Specify sealing and lubrication systems for durability</li>
+      <li>Create production-ready technical drawings and assembly documentation</li>
+    </ul>
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear1.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Gearbox Isometric View</div>
+</div>  
+    <h2>Technical Specifications</h2>
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Driving Gear (Pinion)</th>
+        <th>Driven Gear</th>
+      </tr>
+      <tr>
+        <td>Transmission Ratio</td>
+        <td colspan="2">1.5:1 (16 teeth : 24 teeth)</td>
+      </tr>
+      <tr>
+        <td>Module</td>
+        <td colspan="2">3 mm</td>
+      </tr>
+      <tr>
+        <td>Pitch Diameter</td>
+        <td>48 mm</td>
+        <td>72 mm</td>
+      </tr>
+      <tr>
+        <td>Number of Teeth</td>
+        <td>16</td>
+        <td>24</td>
+      </tr>
+      <tr>
+        <td>Face Width</td>
+        <td colspan="2">19 mm</td>
+      </tr>
+      <tr>
+        <td>Pitch Cone Angle (δ)</td>
+        <td>33.69°</td>
+        <td>56.31°</td>
+      </tr>
+      <tr>
+        <td>Shaft Diameter</td>
+        <td>15 mm</td>
+        <td>20 mm</td>
+      </tr>
+      <tr>
+        <td>Admissible Input Torque</td>
+        <td>5.9 Nm</td>
+        <td>8.9 Nm</td>
+      </tr>
+    </table>
+ 
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear2.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Gearbox Design</div>
+</div> 
+
+    <h2>Material Selection</h2>
+    <p>
+      Materials were carefully selected based on loading conditions, machinability, and cost-effectiveness:
+    </p>
+    <ul>
+      <li><strong>Bevel Gears:</strong> Case-hardened steel (standard specification) — provides superior wear resistance and fatigue strength for gear teeth</li>
+      <li><strong>Driving Shaft:</strong> C45 Steel — offers excellent balance of strength and machinability for moderate-speed applications</li>
+      <li><strong>Driven Shaft:</strong> 42CrMo4 Steel — high-strength alloy steel providing enhanced load-carrying capacity and fatigue resistance</li>
+      <li><strong>Bearings:</strong> High-carbon chromium steel (100Cr6) — standard material for rolling element bearings, providing hardness and durability</li>
+      <li><strong>Housing:</strong> Cast Iron — selected for strength, vibration damping, heat dissipation, and ease of complex machining</li>
+      <li><strong>Lubrication:</strong> Multi-purpose lithium-based grease — ideal for medium-speed applications with excellent thermal stability and water resistance</li>
+      <li><strong>Sealing:</strong> Radial shaft seals and rubber lip seals — prevent contamination and retain lubricant while accommodating shaft rotation</li>
+    </ul>
+ 
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear3.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Front View of the gearbox</div>
+</div> 
+
+    <h2>Force Analysis & Calculations</h2>
+    <h3>Pitch Angles</h3>
+    <p>
+      For bevel gears with perpendicular shafts, pitch cone angles are determined by the gear ratio:
+    </p>
+    <ul>
+      <li>Driving Gear Pitch Angle (δ₁): arctan(16/24) = 33.69°</li>
+      <li>Driven Gear Pitch Angle (δ₂): 90° − 33.69° = 56.31°</li>
+    </ul>
+ 
+    <h3>Gear Contact Forces</h3>
+    <p>
+      Tangential force on the driving gear with 5.9 Nm torque and 48 mm pitch diameter:
+    </p>
+    <ul>
+      <li>Tangential Force (F<sub>t</sub>): 245.83 N — primary load transmitted by gear teeth</li>
+      <li>Normal Force (F<sub>n</sub>): Calculated using pressure angle α = 20°</li>
+      <li>Radial Force (F<sub>r</sub>): 79.31 N — directed toward gear center</li>
+      <li>Axial Force (F<sub>a</sub>): 70.76 N — along shaft axis due to cone angle</li>
+    </ul>
+    <p>
+      These calculated forces were used to size shafts, select bearings, and design support structures. The forces distribute differently to each bearing based on shaft geometry and bearing position.
+    </p>
+ <div class="image-container">
+  <img src="gear5.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Gearbox housing</div>
+</div> 
+    <h3>Shaft Stress Analysis</h3>
+    <p>
+      Both shafts were analyzed under combined bending and torsional loading. The analysis verifies that stress levels remain safely below material yield strengths.
+    </p>
+ 
+    <h4>Driving Shaft (C45 Steel, 15 mm diameter, 100 mm length)</h4>
+    <ul>
+      <li><strong>Bending Stress:</strong> 67.32 N/mm² — from radial gear forces acting at distance from supports</li>
+      <li><strong>Torsional Stress:</strong> 16.41 N/mm² — from torque transmission</li>
+      <li><strong>Von Mises Equivalent Stress:</strong> 75.09 N/mm² — combined stress criterion</li>
+      <li><strong>Allowable Yield Strength (C45):</strong> 245 N/mm²</li>
+      <li><strong>Safety Factor:</strong> >3.0 — excellent margin of safety</li>
+    </ul>
+ 
+    <h4>Driven Shaft (42CrMo4 Steel, 20 mm diameter, 150 mm length)</h4>
+    <ul>
+      <li><strong>Bending Stress:</strong> 48.04 N/mm² — lower than driving shaft due to larger diameter</li>
+      <li><strong>Torsional Stress:</strong> 5.98 N/mm² — proportional to lower output torque</li>
+      <li><strong>Von Mises Equivalent Stress:</strong> 51.65 N/mm² — well within safe limits</li>
+      <li><strong>Allowable Yield Strength (42CrMo4):</strong> 500 N/mm²</li>
+      <li><strong>Safety Factor:</strong> >9.5 — substantial safety margin</li>
+    </ul>
+    <p>
+      Both shafts demonstrate adequate strength. The driven shaft's higher allowable strength combined with its larger diameter provides significant safety margin despite longer length and higher bending moment.
+    </p>
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear6.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Internal view of the gearbox</div>
+</div> 
+    <h2>Bearing Selection & Verification</h2>
+    <p>
+      Four bearings were selected based on calculated loads, shaft positions, and operational requirements. A combination of tapered roller bearings for fixed supports (near gears) and deep groove ball bearings for floating supports (away from gears) was implemented.
+    </p>
+ 
+    <h3>Driving Shaft Bearings</h3>
+    
+    <h4>Bearing A (Fixed Support) — Tapered Roller Bearing 30302</h4>
+    <ul>
+      <li>Position: Close to driving gear, handles combined axial and radial loads</li>
+      <li>Bore Diameter: 15 mm</li>
+      <li>Outside Diameter: 42 mm</li>
+      <li>Width: 14.25 mm</li>
+      <li>Radial Load (F<sub>r</sub>): 40.74 N</li>
+      <li>Axial Load (F<sub>a</sub>): 49.63 N</li>
+      <li>Equivalent Dynamic Load: 131.63 N</li>
+      <li>Bearing Life: 2,177,648.7 hours — provides long service life</li>
+      <li>Dynamic Load Rating (C): 19.3 kN — safely accommodates all loads</li>
+    </ul>
+ 
+    <h4>Bearing B (Floating Support) — Deep Groove Ball Bearing 7302b</h4>
+    <ul>
+      <li>Position: Support away from gear, primarily radial loading</li>
+      <li>Bore Diameter: 15 mm</li>
+      <li>Outside Diameter: 42 mm</li>
+      <li>Width: 13 mm</li>
+      <li>Radial Load: 115 N</li>
+      <li>Equivalent Dynamic Load: 85 N</li>
+      <li>Bearing Life: 5,278,716.9 hours — allows free axial movement</li>
+      <li>Purpose: Floating support prevents preloading from thermal expansion</li>
+    </ul>
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear7.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Internal view of the gearbox</div>
+</div> 
+    <h3>Driven Shaft Bearings</h3>
+    
+    <h4>Bearing C (Fixed Support) — Tapered Roller Bearing 32204</h4>
+    <ul>
+      <li>Position: Close to driven gear, handles combined axial and radial loads</li>
+      <li>Bore Diameter: 20 mm</li>
+      <li>Outside Diameter: 47 mm</li>
+      <li>Width: 19.25 mm</li>
+      <li>Radial Load: 53.77 N</li>
+      <li>Axial Load: 65.5 N</li>
+      <li>Equivalent Dynamic Load: 131.63 N</li>
+      <li>Bearing Life: 81,267,895.58 million revolutions (2,081,201 hours)</li>
+      <li>Dynamic Load Rating (C): 27 kN — excellent margin for all loads</li>
+    </ul>
+ 
+    <h4>Bearing D (Floating Support) — Angular Contact Ball Bearing 7204b</h4>
+    <ul>
+      <li>Position: Support away from gear, primarily radial loading</li>
+      <li>Bore Diameter: 20 mm</li>
+      <li>Outside Diameter: 47 mm</li>
+      <li>Width: 14 mm</li>
+      <li>Contact Angle: 40°</li>
+      <li>Radial Load: 91.8 N</li>
+      <li>Equivalent Dynamic Load: 77 N</li>
+      <li>Bearing Life: 4,164,817.5 hours — provides stable floating support</li>
+      <li>Dynamic Load Rating (C): 14.7 kN</li>
+    </ul>
+ 
+    <h2>Parallel Key Connections</h2>
+    <p>
+      Parallel keys transmit torque between shafts and gear hubs while allowing for accurate positioning. All key dimensions follow DIN 6558 specifications.
+    </p>
+ 
+    <h3>Driving Shaft Key (5 × 5 × 20 mm)</h3>
+    <ul>
+      <li><strong>Shaft Diameter:</strong> 15 mm</li>
+      <li><strong>Key Cross-Section:</strong> 5 × 5 mm</li>
+      <li><strong>Shaft Groove Depth:</strong> 3 mm</li>
+      <li><strong>Hub Groove Depth:</strong> 2.3 mm</li>
+      <li><strong>Shaft Material:</strong> C45 Steel (R<sub>e</sub> ≈ 245 N/mm²)</li>
+      <li><strong>Hub Material:</strong> 42CrMo4 Steel (R<sub>e</sub> ≈ 500 N/mm²)</li>
+      <li><strong>Permissible Pressure (shaft):</strong> 163.33 N/mm²</li>
+      <li><strong>Permissible Pressure (hub):</strong> 250 N/mm²</li>
+      <li><strong>Calculated Loaded Length:</strong> 2.40 mm</li>
+      <li><strong>Maximum Allowed Length (Method C):</strong> 19.5 mm</li>
+      <li><strong>Safety Margin:</strong> Adequate for secure torque transmission</li>
+    </ul>
+ 
+    <h3>Driven Shaft Key (6 × 6 × 30 mm)</h3>
+    <ul>
+      <li><strong>Shaft Diameter:</strong> 20 mm</li>
+      <li><strong>Key Cross-Section:</strong> 6 × 6 mm</li>
+      <li><strong>Shaft Groove Depth:</strong> 3.5 mm</li>
+      <li><strong>Hub Groove Depth:</strong> 2.8 mm</li>
+      <li><strong>Calculated Loaded Length:</strong> 2.18 mm</li>
+      <li><strong>Maximum Allowed Length (Method C):</strong> 26 mm</li>
+      <li><strong>Safety Factor:</strong> >5 — substantial safety margin</li>
+    </ul>
+ 
+    <h2>Housing, Sealing & Lubrication</h2>
+    
+    <h3>Housing Design</h3>
+    <p>
+      <strong>Material:</strong> Cast Iron — selected for its excellent combination of properties:
+    </p>
+    <ul>
+      <li>High strength and rigidity to support all internal loads</li>
+      <li>Excellent vibration damping — reduces noise and improves durability</li>
+      <li>Superior heat dissipation — maintains optimal operating temperature</li>
+      <li>Corrosion resistance — ensures longevity in various environments</li>
+      <li>Ease of machining and complex geometry — allows production of mounting surfaces and bearing bores with required tolerances</li>
+    </ul>
+ 
+    <h3>Lubrication System</h3>
+    <p>
+      <strong>Lubricant:</strong> Multi-purpose lithium-based grease — selected for medium-speed, moderate-load applications:
+    </p>
+    <ul>
+      <li>Excellent thermal stability — maintains consistent performance across temperature range</li>
+      <li>Superior water resistance — prevents degradation in humid environments</li>
+      <li>Strong adhesion to metal surfaces — ensures retention on moving components</li>
+      <li>Low maintenance requirements — operates reliably with minimal service intervals</li>
+      <li>Ideal for enclosed gearbox systems — prevents contamination while providing continuous lubrication</li>
+    </ul>
+ 
+    <h3>Sealing System</h3>
+    <p>
+      Critical to maintaining system reliability and longevity:
+    </p>
+    <ul>
+      <li><strong>Radial Shaft Seals:</strong> Prevent dirt, moisture, and debris from entering the housing</li>
+      <li><strong>Rubber Lip Seals:</strong> Integrated around shafts for effective contamination exclusion</li>
+      <li><strong>Function:</strong> Retain lubricant inside the housing while protecting internal components from external environment</li>
+      <li><strong>Result:</strong> Enhanced overall efficiency and extended bearing and gear service life</li>
+    </ul>
+ 
+    <h2>Design Verification & Manufacturing Readiness</h2>
+    
+    <h3>Interference Check</h3>
+    <p>
+      SolidWorks CAD assembly analysis confirmed zero component interferences. All parts fit within designed tolerances, with adequate clearances for assembly and operation. The design is verified to be manufacturable without modifications.
+    </p>
+ 
+    <h3>Technical Drawing Documentation</h3>
+    <p>
+      Complete production-ready drawings include:
+    </p>
+    <ul>
+      <li>Detailed shaft drawings with all dimensions, tolerances, and surface finishes</li>
+      <li>Assembly drawings showing all components in their correct positions</li>
+      <li>Sectional views for clarity on internal component arrangement</li>
+      <li>Bending moment diagrams validating structural adequacy</li>
+      <li>All drawings follow DIN and ISO standards for technical documentation</li>
+    </ul>
+ 
+    <h2>Results & Conclusions</h2>
+    <p>
+      This bevel gearbox design successfully demonstrates the integration of theoretical engineering knowledge with practical design considerations. The project achieved all stated objectives:
+    </p>
+    <ul>
+      <li><strong>Gear Design:</strong> Achieves the specified 1.5:1 transmission ratio with 16 and 24 teeth configuration</li>
+      <li><strong>Force Distribution:</strong> All calculated contact forces distributed appropriately to shaft and bearing supports</li>
+      <li><strong>Shaft Design:</strong> Both driving (15 mm, C45) and driven (20 mm, 42CrMo4) shafts provide safety factors >3.0 against yield</li>
+      <li><strong>Bearing Selection:</strong> Four bearing types (two tapered roller, two ball/angular contact) chosen for specific load conditions with life calculations exceeding 2 million hours</li>
+      <li><strong>Key Connections:</strong> Both parallel key designs verified with Method C calculations showing adequate loaded length and safe pressure distribution</li>
+      <li><strong>Manufacturing:</strong> Simple, cost-effective cast iron housing design with precision-machined bearing bores ensures assemblability</li>
+      <li><strong>Lubrication & Sealing:</strong> Multi-purpose lithium grease and radial seals selected for long-term reliability in enclosed system</li>
+      <li><strong>Documentation:</strong> Complete technical drawings provide clear manufacturing guidance and assembly instructions</li>
+    </ul>
+
+ <div class="image-container">
+  <img src="../portfolio/pictures/gear1.png" alt="Stress distribution results" 
+       onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/racing-seat-stress.jpg</div>'">
+  <div class="image-caption">Final Gearbox Design</div>
+</div> 
+    <p>
+      The design balances mechanical performance with manufacturability and cost-effectiveness, making it suitable for production. The iterative process of calculation, design refinement, and verification demonstrates professional engineering practice in mechanical power transmission design.
+    </p>
+ 
+    <div class="section-label">Documentation</div>
+    <p>
+      <a href="Group 05- Gift.Chidewu 32824 - TInashe.Shoniwa 31427.pdf" class="doc-link" target="_blank">
+        📄 Complete Project Report (PDF)
+      </a>
+    </p>
+ 
+  </div>
+ 
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>© 2026 Tinashe Shoniwa</div>
+  </footer>
+ 
+</div>
+ 
+</body>
+</html>
+ 

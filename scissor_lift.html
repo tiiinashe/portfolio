@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scissor Lift Table Analysis — Tinashe Shoniwa</title>
+<meta name="description" content="Statics and stress analysis of a structural steel scissor lift table.">
+
+<style>
+  :root {
+    --bg:        #fbfbfb;
+    --bg-elev:   #f0f4ff;
+    --ink:       #0F172A;
+    --ink-dim:   #475569;
+    --ink-faint: #94A3B8;
+    --accent:    #1E3A8A;
+    --accent-d:  #1E40AF;
+    --line:      rgba(15, 23, 42, 0.10);
+    --line-2:    rgba(15, 23, 42, 0.18);
+
+    --serif:    Georgia, serif;
+    --body:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:     ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(217, 119, 87, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* === NAV === */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  nav .brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  nav .back {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav .back:hover { color: var(--accent); }
+
+  /* === PROJECT HEADER === */
+  .project-header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3rem;
+  }
+  .project-header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .project-meta span::after { content: ' ·'; margin-left: 1.5rem; }
+  .project-meta span:last-child::after { content: ''; }
+
+  /* === SECTION LABEL === */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 4rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* === CONTENT === */
+  .content {
+    max-width: 800px;
+  }
+  .content h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1rem;
+    letter-spacing: -0.02em;
+  }
+  .content h2 u {
+    text-decoration: underline;
+    text-decoration-color: var(--line-2);
+    text-underline-offset: 0.3rem;
+  }
+  .content h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin: 2rem 0 1rem;
+    letter-spacing: -0.01em;
+  }
+  .content h3 u {
+    text-decoration: underline;
+    text-decoration-color: var(--line-2);
+    text-underline-offset: 0.25rem;
+  }
+  .content p {
+    margin-bottom: 1.25rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content ul, .content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .content li {
+    margin-bottom: 0.5rem;
+  }
+  .content strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* === SPECS BOX === */
+  .specs-box {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin: 2rem 0;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+  .specs-box strong {
+    color: var(--accent);
+  }
+
+  /* === TAGS === */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border-radius: 4px;
+  }
+
+  /* === IMAGES === */
+  .image-container {
+    margin: 2rem 0;
+    background: var(--bg-elev);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  .image-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-dim);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* === DOCUMENT LINKS === */
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    margin: 0.5rem 0;
+  }
+  .doc-link:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 3rem 0 2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 6rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 800px) {
+    body { font-size: 16px; }
+    .container { padding: 0 1.25rem; }
+    .project-header { padding: 2rem 0 1.5rem; }
+    .project-header h1 { font-size: 2rem; }
+    .project-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .project-meta span::after { content: ''; margin: 0; }
+    .content h2 { font-size: 1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== NAV ============== -->
+  <nav>
+    <div class="brand">Tinashe's Portfolio</div>
+    <a href="index.html" class="back">← Back to portfolio</a>
+  </nav>
+
+  <!-- ============== PROJECT HEADER ============== -->
+  <div class="project-header">
+    <h1>Scissor-Lift Table — Statics & Stress Analysis</h1>
+    <div class="project-meta">
+      <span>2024</span>
+      <span>SolidWorks</span>
+      <span>Structural Analysis</span>
+    </div>
+  </div>
+
+  <!-- ============== TAGS ============== -->
+  <div class="tags">
+    <span class="tag">Static Analysis</span>
+    <span class="tag">SolidWorks</span>
+    <span class="tag">Stress Analysis</span>
+    <span class="tag">Force Calculations</span>
+    <span class="tag">Free Body Diagrams</span>
+    <span class="tag">Structural Steel</span>
+  </div>
+
+  <!-- ============== CONTENT ============== -->
+  <div class="content">
+
+    <h2><u>Overview</u></h2>
+    <p>
+      A scissor lift table is a device used to lift or lower heavy loads, serving as an essential tool in many industries. This project conducts a comprehensive structural analysis to calculate forces and stresses within a structural steel scissor lift table operating under a 5 kN applied force across its full range of motion.
+    </p>
+    <p>
+      The study validates the design's integrity by analyzing reaction forces at support points, internal member forces throughout the scissor mechanism, and stress concentrations at critical pin joints, ensuring safe operation for heavy-duty lifting applications.
+    </p>
+
+    <h2><u>Objectives</u></h2>
+    <p>The primary objectives of this analysis were to:</p>
+    <ul>
+      <li>Determine reaction forces at the supports and pin joints under varying load positions</li>
+      <li>Calculate internal forces in all structural members of the scissor lift mechanism</li>
+      <li>Evaluate shear and bending stresses at critical connection points</li>
+      <li>Verify structural adequacy across the full operating height range (350mm to 750mm)</li>
+      <li>Assess pin joint safety under maximum loading conditions</li>
+    </ul>
+
+    <div class="image-container">
+      <img src="../portfolio/pictures/lift111.jpg" alt="Scissor lift table overview" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-overview.jpg</div>'">
+      <div class="image-caption">Scissor lift table assembly</div>
+    </div>
+
+    <h2><u>Design Specifications</u></h2>
+    
+      <strong>Geometry:</strong><br>
+      • Table Length: 1000 mm<br>
+      • Table Width: 500 mm<br>
+      • Leg Length: 900 mm<br>
+      • Leg Thickness: 15 mm<br>
+      • Closed Height: 350 mm<br>
+      • Open Height: 750 mm<br>
+      <br>
+      <strong>Loading:</strong><br>
+      • Applied Force: 5 kN<br>
+      • Table Self-Weight: 83.3 N (8.49 kg)<br>
+      <br>
+      <strong>Material:</strong><br>
+      • Material: Structural Steel<br>
+      • Density: 7800 kg/m³
+    </div>
+
+
+    <h2><u>Analysis Methodology</u></h2>
+    <p>
+      The analysis employed classical statics principles, utilizing free-body diagrams and equilibrium equations to systematically determine forces throughout the mechanism. The scissor lift was analyzed under four distinct load cases, varying both the vertical height (350mm and 750mm) and the horizontal position of the applied load (250mm and 750mm from the edge).
+    </p>
+
+    <h3><u>Geometric Analysis</u></h3>
+    <p>
+      The angle between the table and legs varies with height. At minimum height (350mm), the legs form a 21.25° angle with the horizontal. At maximum height (750mm), this angle increases to 40°. These angular relationships are critical for decomposing forces into horizontal and vertical components.
+    </p>
+
+    <div class="image-container">
+      <img src="../portfolio/pictures/lift2.jpg" alt="Geometric configuration" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-geometry.jpg</div>'">
+      <div class="image-caption">Detailed View of the table</div>
+    </div>
+
+    <h3><u>Free Body Diagram Approach</u></h3>
+    <p>
+      The structure was systematically isolated into subsystems:
+    </p>
+    <ul>
+      <li><strong>Table Assembly (AB):</strong> Analyzed to determine support reactions at points A and B</li>
+      <li><strong>Left Leg (ACE):</strong> Evaluated for internal forces and pin reactions at joints A, C, and E</li>
+      <li><strong>Right Leg (BCD):</strong> Analyzed for force distribution through joints B, C, and D</li>
+    </ul>
+    <p>
+      For each subsystem, equilibrium equations (ΣFx = 0, ΣFy = 0, ΣM = 0) were applied to solve for unknown reaction forces and internal member loads.
+    </p>
+
+    <h2><u>Load Case Analysis</u></h2>
+
+    <h3><u>Case 1:</u> Load at 250mm, Height 350mm</h3>
+    <p>
+      With the 5 kN load applied near the left edge at minimum height, the analysis revealed asymmetric loading on the support points:
+    </p>
+    <ul>
+      <li>Reaction at Point A (RA): 3969.4 N</li>
+      <li>Reaction at Point B (RB): 1114 N</li>
+      <li>Leg Force (P): 15,149.8 N (compression)</li>
+      <li>Horizontal Component (Px): 14,119.7 N</li>
+      <li>Vertical Component (Py): 5,490.8 N</li>
+    </ul>
+    <p>
+      The left support bears approximately 78% of the total applied load, creating the highest leg compression force observed across all load cases.
+    </p>
+
+    <div class="image-container">
+      <img src="../portfolio/pictures/lift4.png" alt="Case 1 loading" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-case1.jpg</div>'">
+      <div class="image-caption">Load case 1: Near-edge loading at minimum height</div>
+    </div>
+
+    <h3><u>Case 2:</u> Load at 250mm, Height 750mm</h3>
+    <p>
+      At maximum extension with the load positioned identically, the steeper leg angle (40°) modifies force distribution:
+    </p>
+    <ul>
+      <li>Reaction at Point A (RA): 3969.4 N</li>
+      <li>Reaction at Point B (RB): 1114 N</li>
+      <li>Leg Force (P): 16,618.6 N (compression)</li>
+      <li>Horizontal Component (Px): 12,730.6 N</li>
+      <li>Vertical Component (Py): 10,682.3 N</li>
+    </ul>
+    <p>
+      Despite identical table reactions, the leg force increases by approximately 10% compared to Case 1, demonstrating the effect of geometric configuration on internal loading.
+    </p>
+<div class="image-container">
+      <img src="../portfolio/pictures/lift5.png" alt="Case 2 loading" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-case2.jpg</div>'">
+      <div class="image-caption">Load case 2: Near-edge loading at maximum height</div>
+    </div>
+    <h3><u>Case 3:</u> Load at 750mm, Height 350mm</h3>
+    <p>
+      With the load shifted to the right edge at minimum height, the load distribution reverses:
+    </p>
+    <ul>
+      <li>Reaction at Point A (RA): 1118.3 N</li>
+      <li>Reaction at Point B (RB): 3964.9 N</li>
+      <li>Leg Force (P): 28,288.9 N (compression)</li>
+      <li>Horizontal Component (Px): 26,365.5 N</li>
+      <li>Vertical Component (Py): 10,252.9 N</li>
+    </ul>
+    <p>
+      This configuration produces the maximum leg compression force of all cases — nearly double that of Case 1 — highlighting the critical importance of load position in scissor lift design.
+    </p>
+
+    <h3><u>Case 4:</u> Load at 750mm, Height 750mm</h3>
+    <p>
+      At maximum height with the load positioned at the far edge:
+    </p>
+    <ul>
+      <li>Reaction at Point A (RA): 1092.1 N</li>
+      <li>Reaction at Point B (RB): 3991.2 N</li>
+      <li>Leg Force (P): 19,309.8 N (compression)</li>
+      <li>Horizontal Component (Px): 14,792.2 N</li>
+      <li>Vertical Component (Py): 12,412.1 N</li>
+    </ul>
+    <p>
+      While still producing high leg loads, the steeper angle at maximum height reduces compression compared to Case 3.
+    </p>
+
+    <h2><u>Stress Analysis</u></h2>
+
+    <h3><u>Pin Joint Analysis</u></h3>
+    <p>
+      The leg connector pins (Ø20mm) were analyzed for shear stress under the maximum applied force. Using the total reaction force of 5083.3 N distributed across two shear planes:
+    </p>
+    <p>
+      <strong>Pin Shear Stress (τ):</strong> 8.09 MPa
+    </p>
+    <p>
+      This value is well below the typical allowable shear stress for structural steel (approximately 120-150 MPa), indicating adequate safety margin at the pin connections.
+    </p>
+
+    <h3><u>Leg Bending Analysis</u></h3>
+    <p>
+      The legs were evaluated for bending stresses using the flexure formula. For a 15mm thick structural steel member with the applied moment from Case 3 (the critical load case):
+    </p>
+    <p>
+      <strong>Bending Stress (σ):</strong> 67.75 N/mm² (approximately 68 MPa)
+    </p>
+    <p>
+      Additionally, the shear stress in each leg member:
+    </p>
+    <p>
+      <strong>Leg Shear Stress (τ):</strong> 5.19 MPa
+    </p>
+    <p>
+      Both values remain safely below material yield limits for structural steel (typically 250-400 MPa), confirming adequate structural capacity.
+    </p>
+
+    <h2><u>SolidWorks CAD Model</u></h2>
+    <p>
+      A complete 3D CAD model was developed in SolidWorks to visualize the mechanism and validate geometric relationships. The model includes:
+    </p>
+    <ul>
+      <li>Fully parametric table and leg assemblies</li>
+      <li>Accurate pin joint representations</li>
+      <li>Motion study capabilities to simulate height adjustment</li>
+      <li>Material property assignments for structural steel components</li>
+    </ul>
+
+    <div class="image-container">
+      <img src="../portfolio/pictures/lift6.jpg" alt="SolidWorks model" 
+           onerror="this.parentElement.innerHTML='<div style=\'padding:3rem;text-align:center;color:var(--ink-faint);\'>Add your image: assets/images/scissor-lift-cad.jpg</div>'">
+      <div class="image-caption">SolidWorks assembly model with cross-section view</div>
+    </div>
+
+    <h2><u>Conclusions</u></h2>
+    <p>
+      The structural analysis confirms that the scissor lift table design meets safety requirements under the specified 5 kN loading across its full operating range. Key findings include:
+    </p>
+    <ul>
+      <li><strong>Critical Load Case:</strong> Maximum leg forces occur with far-edge loading at minimum height (Case 3), producing 28.3 kN compression</li>
+      <li><strong>Pin Joints:</strong> Shear stress of 8.09 MPa provides substantial safety margin (approximately 15× below material limits)</li>
+      <li><strong>Structural Members:</strong> Bending stress of 68 MPa and shear stress of 5.19 MPa remain well within allowable limits</li>
+      <li><strong>Load Distribution:</strong> Asymmetric loading creates significant variation in support reactions, ranging from 1.1 kN to 4.0 kN depending on load position</li>
+      <li><strong>Height Effect:</strong> Leg angle variation between 21.25° and 40° influences force magnitudes by approximately 10-15%</li>
+    </ul>
+    <p>
+      The design demonstrates adequate structural capacity for the specified application. Future optimization could focus on reducing leg thickness or exploring alternate cross-sections to minimize weight while maintaining safety margins.
+    </p>
+
+    <h2><u>Documentation</u></h2>
+    <p>
+      <a href="scissor lift.pdf" class="doc-link" target="_blank">
+        📄 Full Technical Report (PDF)
+      </a>
+    </p>
+
+  </div>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>© 2026 Tinashe Shoniwa</div>
+  </footer>
+
+</div>
+
+</body>
+</html>
